@@ -1,4 +1,8 @@
-
+########################################################################
+# gr-RigExpert module
+# V.V.
+# 2024.08.10
+########################################################################
 
 ########################################################################
 # Project setup
@@ -120,12 +124,6 @@ endif(ENABLE_PYTHON)
 install(FILES cmake/Modules/gnuradio-RigExpertConfig.cmake
     DESTINATION ${GR_CMAKE_DIR}
 )
-
-install (
-    FILES fobos-sdr.rules
-    DESTINATION "/etc/udev/rules.d"
-    COMPONENT "udev"
-    )
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(

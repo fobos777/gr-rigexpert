@@ -38,8 +38,8 @@ void bind_fobos_sdr(py::module& m)
 
         .def(py::init(&fobos_sdr::make),
            py::arg("index") = 0,
-           py::arg("frequency") = 100.0,
-           py::arg("samplerate") = 10.0,
+           py::arg("frequency") = 100.0E6,
+           py::arg("samplerate") = 10.0E6,
            py::arg("lna_gain") = 0,
            py::arg("vga_gain") = 0,
            py::arg("direct_sampling") = 0,

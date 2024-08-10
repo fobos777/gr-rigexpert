@@ -10,21 +10,18 @@ This is the Fobos SDR receiver Complex IQ signal source block for GnuRadio. Full
 ## Dependencies
 
 - libusb-1.0-0-dev 2:1.0.25
+- libfobos https://github.com/rigexpert/libfobos
 
 ## How to build and install
-
-git clone [this repo]<br />
-cd gr-rigexpert<br />
-sudo cp fobos-sdr.rules /etc/udev/rules.d/00-fobos-sdr.rules<br />
-sudo udevadm control --reload-rules<br />
-sudo udevadm trigger<br />
-mkdir build<br />
-cd build<br />
-cmake ..<br />
-make<br />
-sudo make install<br />
-sudo ldconfig<br />
-
+```
+git clone [this repo]
+cd gr-rigexpert
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 ## how to update md5 (in build **directory**)
 
 - run md5sum ../include/gnuradio/RigExpert/fobos_sdr.h > sha.txt
@@ -33,9 +30,9 @@ sudo ldconfig<br />
 - replace pevious /* BINDTOOL_HEADER_FILE_HASH(f06b7121ccf4e00c9fa9af4432643237)                     */
 
 or just
-
-$ gr_modtool bind -u <module_name>
-
+```
+ gr_modtool bind -u <module_name>
+```
 ## How to use
 
 Nothing special.

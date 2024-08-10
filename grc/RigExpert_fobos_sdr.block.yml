@@ -20,15 +20,15 @@ parameters:
   default: 0
 
 - id: frequency
-  label: 'Frequency (MHz)'
+  label: 'Frequency (Hz)'
   dtype: real
-  default: 100.0
+  default: 100.0E6
 
 - id: samplerate
-  label: 'Sample rate (MHz)'
+  label: 'Sample rate (Hz)'
   dtype: real
-  default: 10.0
-  options: [ 50.0, 40.0, 32.0, 25.0, 20.0, 16.0, 12.5, 10.0, 8.0, 6.4, 6.25, 5.0, 4.0]
+  default: 10.0E6
+  options: [ 50.0E6, 40.0E6, 32.0E6, 25.0E6, 20.0E6, 16.0E6, 12.5E6, 10.0E6, 8.0E6]
 
 - id: lna_gain
   label: 'LNA gain'

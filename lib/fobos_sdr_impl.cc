@@ -7,11 +7,12 @@
 //  /_ /  \_\ /_/  \__   / /______/ /_/\_\ / ____/  \____/ /_/      \___/
 //               /______/                 /_/             
 //  Fobos SDR API library
-//  Copyright (C) Rig Expert Ukraine Ltd.
+//  V.V.
 //  2024.03.21
 //  2024.04.08
 //  2024.04.21
 //  2024.04.26
+//  2024.08.10 libfobos 2.3.1 support, freq[Hz]
 //==============================================================================
 #include <math.h>
 #include "fobos_sdr_impl.h"
@@ -24,18 +25,18 @@ namespace gr
         //======================================================================
         using output_type = gr_complex;
         fobos_sdr::sptr fobos_sdr::make(int index, 
-                                        double frequency_mhz, 
-                                        double samplerate_mhz,
+                                        double frequency, 
+                                        double samplerate,
                                         int lna_gain,
                                         int vga_gain,
                                         int direct_sampling,
                                         int clock_source)
         {
-            printf("make (%d, %f, %f, %d, %d, %d, %d)\n", index, frequency_mhz, samplerate_mhz, lna_gain, vga_gain, direct_sampling, clock_source);
+            printf("make (%d, %f, %f, %d, %d, %d, %d)\n", index, frequency, samplerate, lna_gain, vga_gain, direct_sampling, clock_source);
             return gnuradio::make_block_sptr<fobos_sdr_impl>(
                                         index, 
-                                        frequency_mhz, 
-                                        samplerate_mhz,
+                                        frequency, 
+                                        samplerate,
                                         lna_gain,
                                         vga_gain,
                                         direct_sampling,
@@ -44,8 +45,8 @@ namespace gr
         //======================================================================
         // The private constructor
         fobos_sdr_impl::fobos_sdr_impl( int index, 
-                                        double frequency_mhz, 
-                                        double samplerate_mhz,
+                                        double frequency, 
+                                        double samplerate,
                                         int lna_gain,
                                         int vga_gain,
                                         int direct_sampling,
@@ -55,6 +56,14 @@ namespace gr
                              gr::io_signature::make(
                                  1, 1, sizeof(output_type)))
         {
+                char lib_version[64];
+                char drv_version[64];
+                char hw_revision[64];
+                char fw_version[64];
+                char manufacturer[64];
+                char product[64];
+                char serial[64];
+
             _rx_bufs = 0;
             _rx_idx_w = 0;
             _rx_pos_r = 0;
@@ -64,7 +73,11 @@ namespace gr
             _running = false;
             _buff_counter = 0;
             _overruns_count = 0;
+            fobos_rx_get_api_info(lib_version, drv_version);
+            printf("Fobos SDR API Info lib: %s drv: %s\n", lib_version, drv_version);
+        
             int count = fobos_rx_get_device_count();
+
             printf("fobos_sdr_impl:: found devices: %d\n", count);
             if (count > 0)
             {
@@ -75,15 +88,29 @@ namespace gr
                 if (result == 0)
                 {
                     printf("open...ok\n");
-                    printf("(%d, %f, %f, %d, %d, %d, %d)\n", index, frequency_mhz, samplerate_mhz, lna_gain, vga_gain, direct_sampling, clock_source);
+                    result = fobos_rx_get_board_info(_dev, hw_revision, fw_version, manufacturer, product, serial);
+                    if (result != 0)
+                    {
+                        printf("fobos_rx_get_board_info - error!\n");
+                    }
+                    else
+                    {
+                        printf("board info\n");
+                        printf("    hw_revision:  %s\n", hw_revision);
+                        printf("    fw_version:   %s\n", fw_version);
+                        printf("    manufacturer: %s\n", manufacturer);
+                        printf("    product:      %s\n", product);
+                        printf("    serial:       %s\n", serial);
+                    }
+                    printf("(%d, %f, %f, %d, %d, %d, %d)\n", index, frequency, samplerate, lna_gain, vga_gain, direct_sampling, clock_source);
 
-                    result = fobos_rx_set_frequency(_dev, frequency_mhz * 1E6, 0);
+                    result = fobos_rx_set_frequency(_dev, frequency, 0);
                     if (result != 0)
                     {
                         printf("fobos_rx_set_frequency - error!\n");
                     }
 
-                    result = fobos_rx_set_samplerate(_dev, samplerate_mhz * 1E6, 0);
+                    result = fobos_rx_set_samplerate(_dev, samplerate, 0);
                     if (result != 0)
                     {
                         printf("fobos_rx_set_samplerate - error!\n");
@@ -247,18 +274,18 @@ namespace gr
             _this->_running = false;
         }
         //======================================================================
-        void fobos_sdr_impl::set_frequency(double frequency_mhz)
+        void fobos_sdr_impl::set_frequency(double frequency)
         {
             double actual;
-            int res = fobos_rx_set_frequency(_dev, frequency_mhz * 1e6, &actual);
-            printf("Setting freq %f MHz, actual %f MHz: %s\n", frequency_mhz, actual / 1E6, res == 0 ? "OK" : "ERR");
+            int res = fobos_rx_set_frequency(_dev, frequency, &actual);
+            printf("Setting freq %f MHz, actual %f MHz: %s\n", frequency / 1E6, actual / 1E6, res == 0 ? "OK" : "ERR");
         }
         //======================================================================
-        void fobos_sdr_impl::set_samplerate(double samplerate_mhz)
+        void fobos_sdr_impl::set_samplerate(double samplerate)
         {
             double actual;
-            int res = fobos_rx_set_samplerate(_dev, samplerate_mhz * 1e6, &actual);
-            printf("Setting sample rate %f MHz, actual %f MHz: %s\n", samplerate_mhz, actual / 1E6, res == 0 ? "OK" : "ERR");
+            int res = fobos_rx_set_samplerate(_dev, samplerate, &actual);
+            printf("Setting sample rate %f MHz, actual %f MHz: %s\n", samplerate / 1E6, actual / 1E6, res == 0 ? "OK" : "ERR");
         }
         //======================================================================
         void fobos_sdr_impl::set_lna_gain(int lna_gain)
